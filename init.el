@@ -171,12 +171,7 @@ one, an error is signaled."
   :if (display-graphic-p))
 
 
-(use-package nerd-icons
-  :ensure t
-  :custom
-  (nerd-icons-font-family "JetBrains Mono")
-  :if (display-graphic-p)
-  )
+(use-package nerd-icons)
 
 
 (use-package nerd-icons-dired
@@ -232,44 +227,6 @@ one, an error is signaled."
 
 
 (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
-
-
-; DASHBOARD SETTINGS
-(use-package dashboard
-  :ensure t
-  :init
-  (setq initial-buffer-choice 'dashboard-open)
-  ;; possible values: 'official, 'logo, integers (1, 2, 3, 4)
-  (setq dashboard-startup-banner 2)
-  (setq dashboard-set-heading-icons t)
-  (setq dashboard-set-file-icons t)
-  (setq dashboard-center-content t)
-  (setq dashboard-vertically-center-content t)
-  (setq dashboard-display-icons-p t)
-  (setq dashboard-icon-type 'nerd-icons)
-  ;; choose which sections to show and how many items per section
-  (setq dashboard-items '((recents   . 5)
-			  (projects  . 5)
-			  (bookmarks . 5)
-			  (registers . 5)))
-  ;; customize which widgets to display in order
-  (setq dashboard-startupify-list '(dashboard-insert-banner
-				    dashboard-insert-navigator
-				    dashboard-insert-items))
-  ;; customise the shortcuts for each heading on the dashboard
-  (setq dashboard-item-shortcuts '((recents   . "r")
-				   (projects  . "p")
-				   (bookmarks . "m")
-				   (registers . "e")))
-  :custom
-  (dashboard-modify-heading-icons '((recents . "file-text")
-				    (bookmarks . "book")))
-  :config
-  (dashboard-setup-startup-hook)
-  )
-
-(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-
 
 ;; Make parentheses different colors to easily tell how they close
 (use-package rainbow-delimiters
@@ -407,12 +364,52 @@ one, an error is signaled."
   (message "Nerd Font is NOT installed"))
 
 ;; Set a different font for icons
-(setq nerd-icons-font-family "JetBrains Mono")
+;; KEEP THIS OFF. MODELINE ICONS DO NOT SHOW UP.
+;;(setq nerd-icons-font-family "Symbols Nerd Fonts Mono")
 
 ;; Set the unicode font
 (setq doom-unicode-font (font-spec :family "JetBrains Mono" :size 11))
 
 (set-face-attribute 'default nil :height 120)  ;; Adjust font size to 12 points
+
+
+; DASHBOARD SETTINGS
+(use-package dashboard
+  :ensure t
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  ;; possible values: 'official, 'logo, integers (1, 2, 3, 4)
+  (setq dashboard-startup-banner 2)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-center-content t)
+  (setq dashboard-vertically-center-content t)
+  (setq dashboard-display-icons-p t)
+  (setq dashboard-icon-type 'nerd-icons)
+  ;; choose which sections to show and how many items per section
+  (setq dashboard-items '((recents   . 5)
+			  (projects  . 5)
+			  (bookmarks . 5)
+			  (registers . 5)))
+  ;; customize which widgets to display in order
+  (setq dashboard-startupify-list '(dashboard-insert-banner
+				    dashboard-insert-navigator
+				    dashboard-insert-items))
+  ;; customise the shortcuts for each heading on the dashboard
+  (setq dashboard-item-shortcuts '((recents   . "r")
+				   (projects  . "p")
+				   (bookmarks . "m")
+				   (registers . "e")))
+  ;; :custom
+  ;; (dashboard-modify-heading-icons '((recents . "file-text")
+  ;; 				    (bookmarks . "book")))
+  :config
+  (dashboard-setup-startup-hook)
+  )
+
+(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+
+
 
 
 ;;; OTHER USEFUL FUNCS
