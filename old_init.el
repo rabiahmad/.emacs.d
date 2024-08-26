@@ -1,14 +1,7 @@
-(scroll-bar-mode -1)     ; Disable scroll bar
-(tool-bar-mode -1)       ; Disable toolbar
-(tooltip-mode -1)        ; Disable tooltips
-(set-fringe-mode 10)     ; Give more breathing room
-(toggle-frame-maximized) ; Maximize the emacs window on startup
-(set-frame-parameter nil 'alpha-background 100) ; For current frame, transparency
-(add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
-(menu-bar-mode -1) ; Disable the menu bar
-
+;; Disable the annoying bell sound
 (setq visible-bell 1)
 
+;; Save ~ files and other backups all together
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
       backup-by-copying t    ; Don't delink hardlinks
       version-control t      ; Use version numbers on backups
@@ -16,24 +9,19 @@
       kept-new-versions 20   ; How many of the newest versions to keep
       kept-old-versions 5)   ; And how many of the old
 
-(column-number-mode) ; Allow display of line number
-(global-display-line-numbers-mode t) ; Activate display of line number
+(scroll-bar-mode -1)     ; Disable scroll bar
+(tool-bar-mode -1)       ; Disable toolbar
+(tooltip-mode -1)        ; Disable tooltips
+(set-fringe-mode 10)     ; Give more breathing room
 
-(dolist (mode '(org-mode-hook
-                term-mode-hook
-                eshell-mode-hook
-                shell-mode-hook
-                vterm-mode-hook
-                treemacs-mode-hook))
-(add-hook mode (lambda () (display-line-numbers-mode 0))))
+(set-frame-parameter nil 'alpha-background 100) ; For current frame, transparency
+(add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
 
-(dolist (mode '(org-mode-hook
-                python-mode-hook
-                c-mode-hook
-                c++-mode-hook))
-  (add-hook mode (lambda () (visual-line-mode 1))))
+(menu-bar-mode -1) ; Disable the menu bar
 
+;; Initialize package sources
 (require 'package)
+
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "https://elpa.gnu.org/packages/")
@@ -49,46 +37,42 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(column-number-mode) ; Allow display of line number
+(global-display-line-numbers-mode t) ; Activate display of line number
+
+;; Disable line numbers for some modes
+(dolist (mode '(org-mode-hook
+		term-mode-hook
+                eshell-mode-hook
+                shell-mode-hook
+                vterm-mode-hook
+		treemacs-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+(dolist (mode '(org-mode-hook
+                python-mode-hook
+                c-mode-hook
+                c++-mode-hook))
+  (add-hook mode (lambda () (visual-line-mode 1))))
+
+
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-ibuffer)
-	 ("C-x C-b" . counsel-ibuffer)
-	 ("C-x C-f" . counsel-find-file)
-	 ("C-x f" . counsel-find-file)))
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file)
+         ("C-x f" . counsel-find-file)))
 
 (use-package ivy
-  ;; :custom
-  ;;   (setq ivy-use-virtual-buffers t)
-  ;;   (setq ivy-count-format "(%d/%d) ")
-  ;;   (setq enable-recursive-minibuffers t)
+  :diminish
   :bind (("C-s" . swiper)
-	 :map ivy-minibuffer-map
-	 ("TAB" . ivy-alt-done))
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done))
   :config
   (ivy-mode 1))
 
-(use-package ivy-rich
-:ensure t
-:init (ivy-rich-mode 1) ;; this gets us descriptions in M-x
-:custom
-(ivy-virtual-abbreviate 'full
- ivy-rich-switch-buffer-align-virtual-buffer t
- ivy-rich-path-style 'abbrev)
-:config
-(ivy-set-display-transformer 'ivy-switch-buffer
-                             'ivy-rich-switch-buffer-transformer))
 
-(use-package helpful
-  :ensure t
-  :custom
-  (counsel-describe-function-function #'helpful-callable)
-  (counsel-describe-variable-function #'helpful-variable)
-  :bind
-  ([remap describe-function] . counsel-describe-function)
-  ([remap describe-command] . helpful-command)
-  ([remap describe-variable] . counsel-describe-variable)
-  ([remap describe-key] . helpful-key))
-
+;;; WINDOW MANAGEMENT
 (require 'windmove)
 
 ;;;###autoload
@@ -100,7 +84,7 @@ error is signaled."
 ;;  split, if possible."
   (interactive)
   (let* ((other-win (windmove-find-other-window 'up))
-         (buf-this-buf (window-buffer (selected-window))))
+	 (buf-this-buf (window-buffer (selected-window))))
     (if (null other-win)
         (error "No window above this one")
       ;; swap top with this one
@@ -116,7 +100,7 @@ If there is no split, ie now window under the current one, an
 error is signaled."
   (interactive)
   (let* ((other-win (windmove-find-other-window 'down))
-         (buf-this-buf (window-buffer (selected-window))))
+	 (buf-this-buf (window-buffer (selected-window))))
     (if (or (null other-win) 
             (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
         (error "No window under this one")
@@ -133,7 +117,7 @@ If there is no split, ie now window on the left of the current
 one, an error is signaled."
   (interactive)
   (let* ((other-win (windmove-find-other-window 'left))
-         (buf-this-buf (window-buffer (selected-window))))
+	 (buf-this-buf (window-buffer (selected-window))))
     (if (null other-win)
         (error "No left split")
       ;; swap top with this one
@@ -149,7 +133,7 @@ If there is no split, ie now window on the right of the current
 one, an error is signaled."
   (interactive)
   (let* ((other-win (windmove-find-other-window 'right))
-         (buf-this-buf (window-buffer (selected-window))))
+	 (buf-this-buf (window-buffer (selected-window))))
     (if (null other-win)
         (error "No right split")
       ;; swap top with this one
@@ -158,19 +142,8 @@ one, an error is signaled."
       (set-window-buffer other-win buf-this-buf)
       (select-window other-win))))
 
-;; Set the font everywhere
-(set-frame-font "JetBrains Mono-12" nil t)
 
-;; Check if Nerd Font is installed and avoid installation prompt
-(if (member "JetBrains Mono" (font-family-list))
-    (message "Nerd Font is installed")
-  (message "Nerd Font is NOT installed"))
-
-;; Set the unicode font
-(setq doom-unicode-font (font-spec :family "JetBrains Mono" :size 11))
-
-(set-face-attribute 'default nil :height 120)  ;; Adjust font size to 12 points
-
+;;; THEMES
 (use-package doom-themes
   ;;:ensure t
   :config
@@ -185,10 +158,14 @@ one, an error is signaled."
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
+
+
 (use-package all-the-icons
   :if (display-graphic-p))
 
+
 (use-package nerd-icons)
+
 
 (use-package nerd-icons-dired
   :hook
@@ -210,6 +187,7 @@ one, an error is signaled."
 	auto-revert-interval 1
 	delete-by-moving-to-trash t))
 
+
 ;; This changes the modeline bar at the bottom of the screen
 (use-package doom-modeline
   :ensure t
@@ -222,55 +200,31 @@ one, an error is signaled."
 	inhibit-compacting-font-caches t  ;; fix lagging issue
 	))
 
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
+;; ( use-package neotree
+;;   :config
+;;   (setq neo-smart-open t
+;;         neo-show-hidden-files t
+;;         neo-window-width 55
+;;         neo-window-fixed-size nil
+;;         inhibit-compacting-font-caches t
+;;         projectile-switch-project-action 'neotree-projectile-action) 
+;;         ;; truncate long file names in neotree
+;;         (add-hook 'neo-after-create-hook
+;;            #'(lambda (_)
+;;                (with-current-buffer (get-buffer neo-buffer-name)
+;;                  (setq truncate-lines t)
+;;                  (setq word-wrap nil)
+;;                  (make-local-variable 'auto-hscroll-mode)
+;;                  (setq auto-hscroll-mode nil)))))
 
-(use-package page-break-lines)
-   (use-package dashboard
-     :ensure t
-     :init
-     (setq initial-buffer-choice 'dashboard-open)
-     ;; possible values: 'official, 'logo, integers (1, 2, 3, 4)
-     (setq dashboard-startup-banner 2)
-     (setq dashboard-set-heading-icons t)
-     (setq dashboard-set-file-icons t)
-     (setq dashboard-center-content t)
-     (setq dashboard-vertically-center-content t)
-     (setq dashboard-display-icons-p t)
-     (setq dashboard-icon-type 'nerd-icons)
-     (setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
-     ;; choose which sections to show and how many items per section
-     (setq dashboard-items '((recents   . 5)
-                             (projects  . 5)
-                             (agenda    . 5)
-                             (bookmarks . 5)
-                             (registers . 5)))
-     ;; customize which widgets to display in order
-     (setq dashboard-startupify-list '(dashboard-insert-banner
-                                       ;; dashboard-insert-newline
-                                       ;; dashboard-insert-banner-title
-                                       ;; dashboard-insert-newline
-                                       dashboard-insert-navigator
-                                       dashboard-insert-newline
-                                       dashboard-insert-init-info
-                                       dashboard-insert-items
-                                       dashboard-insert-newline
-                                       dashboard-insert-footer))
 
-     ;; customise the shortcuts for each heading on the dashboard
-     (setq dashboard-item-shortcuts '((recents   . "r")
-                                      (projects  . "p")
-                                      (agenda    . "a")
-                                      (bookmarks . "m")
-                                      (registers . "e")))
+;; (setq neo-theme (if (display-graphic-p) 'icons 'a
+;;		    rrow))
 
-     (setq dashboard-item-names '(("Agenda for the coming week:" . "Agenda:")))
 
-     :config
-     (dashboard-setup-startup-hook)
-     )
-
-   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+;; ----------------------------------------------
+;;     TREEMACS
+;; ----------------------------------------------
 
 (use-package treemacs
   :ensure t
@@ -366,7 +320,6 @@ one, an error is signaled."
   :after (treemacs evil)
   :ensure t)
 
-;; Not using Projectile, so have commented this out
 ;; (use-package treemacs-projectile
 ;;   :after (treemacs projectile)
 ;;   :ensure t)
@@ -389,11 +342,41 @@ one, an error is signaled."
   :ensure t
   :config (treemacs-set-scope-type 'Tabs))
 
+;; (treemacs-start-on-boot)
+
+;; ----------- END TREEMACS ------------ ;;
+
+
+
+
+;; Make parentheses different colors to easily tell how they close
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+;; Gives more useful completion when you start typing a command
 (use-package which-key
   :init (which-key-mode)
   :diminish which-key-mode
   :config
   (setq which-key-idle-delay 0.5))
+
+;; Add to to ivy to provide command descriptions
+(use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
+
+;; Makes help interface more contextual
+(use-package helpful
+  :ensure t
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
+
 
 (use-package org
   :config
@@ -477,17 +460,86 @@ one, an error is signaled."
 ;; Some extra python fluff
 (add-hook 'python-mode-hook (lambda () (setq fill-column 120)))
 
+
+;;; FONT CUSTOMISATIONS
+;; Set the font everywhere
+(set-frame-font "JetBrains Mono-12" nil t)
+
+;; Check if Nerd Font is installed and avoid installation prompt
+(if (member "JetBrains Mono" (font-family-list))
+    (message "Nerd Font is installed")
+  (message "Nerd Font is NOT installed"))
+
+;; Set the unicode font
+(setq doom-unicode-font (font-spec :family "JetBrains Mono" :size 11))
+
+(set-face-attribute 'default nil :height 120)  ;; Adjust font size to 12 points
+
+
+;;; DASHBOARD SETTINGS
+(use-package dashboard
+  :ensure t
+  :init
+  (setq initial-buffer-choice 'dashboard-open)
+  ;; possible values: 'official, 'logo, integers (1, 2, 3, 4)
+  (setq dashboard-startup-banner 2)
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+  (setq dashboard-center-content t)
+  (setq dashboard-vertically-center-content t)
+  (setq dashboard-display-icons-p t)
+  (setq dashboard-icon-type 'nerd-icons)
+  (setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
+  ;; choose which sections to show and how many items per section
+  (setq dashboard-items '((recents   . 5)
+			  (projects  . 5)
+			  (agenda    . 5)
+			  (bookmarks . 5)
+			  (registers . 5)))
+  ;; customize which widgets to display in order
+  (setq dashboard-startupify-list '(dashboard-insert-banner
+                                    ;; dashboard-insert-newline
+                                    ;; dashboard-insert-banner-title
+                                    ;; dashboard-insert-newline
+                                    dashboard-insert-navigator
+                                    dashboard-insert-newline
+                                    dashboard-insert-init-info
+                                    dashboard-insert-items
+                                    dashboard-insert-newline
+                                    dashboard-insert-footer))
+
+ ;; customise the shortcuts for each heading on the dashboard
+  (setq dashboard-item-shortcuts '((recents   . "r")
+				   (projects  . "p")
+				   (agenda    . "a")
+				   (bookmarks . "m")
+				   (registers . "e")))
+
+  (setq dashboard-item-names '(("Agenda for the coming week:" . "Agenda:")))
+
+  :config
+  (dashboard-setup-startup-hook)
+  )
+
+(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+
+(use-package page-break-lines)
+
+;;; OTHER USEFUL FUNCS
+(defun reload-init-file ()
+  (interactive)
+  (load-file user-init-file)
+  (load-file user-init-file))
+
+;;; EVIL MODE
 (unless (package-installed-p 'evil)
   (package-install 'evil))
 
 (require 'evil)
 (evil-mode 1)
 
-(defun reload-init-file ()
-  (interactive)
-  (load-file user-init-file)
-  (load-file user-init-file))
 
+;;; GLOBAL KEY BINDINGS
 (use-package general)
 
 (define-key global-map "\C-cl" 'org-store-link)
@@ -501,16 +553,10 @@ one, an error is signaled."
  "C-c l" 'org-store-link
  "C-c a" 'org-agenda
  "C-c C-/" 'comment-or-uncomment-region
-
- ;; Use ESC to quit prompts (same as C-q)
- "<escape>" 'keyboard-escape-quit
-
- ;; You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTRL plus the mouse wheel for zooming in/out.
- "C-=" 'text-scale-increase
- "C--" 'text-scale-decrease
- "<C-wheel-up>" 'text-scale-increase
- "<C=wheel-down>" 'text-scale-decrease
 )
+
+;; Make ESC quit prompts
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
