@@ -1,0 +1,35 @@
+# Git ignore file
+# Emacs temp. files
+\#*\#
+*~
+.#*
+tramp
+
+# Packages installed & byte-compiled by elpa
+elpa/
+
+# DS_Store
+.DS_Store
+
+# Emacs cache
+cache/
+.cache/
+bookmarks
+
+# Emacs server dir
+server/
+
+# Always keep .gitignore
+!.gitignore
+
+# Org-mode
+.org-id-locations
+*_archive
+org-roam.db
+
+# Recentf files
+recentf
+
+transient/
+eshell/
+projects

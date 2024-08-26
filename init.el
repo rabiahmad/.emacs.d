@@ -19,9 +19,6 @@
 
 (menu-bar-mode -1) ; Disable the menu bar
 
-;; Make ESC quit prompts
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
 ;; Initialize package sources
 (require 'package)
 
@@ -44,10 +41,12 @@
 (global-display-line-numbers-mode t) ; Activate display of line number
 
 ;; Disable line numbers for some modes
-(dolist (mode '(term-mode-hook
+(dolist (mode '(org-mode-hook
+		term-mode-hook
                 eshell-mode-hook
                 shell-mode-hook
-                vterm-mode-hook))
+                vterm-mode-hook
+		treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (dolist (mode '(org-mode-hook
@@ -73,8 +72,7 @@
   (ivy-mode 1))
 
 
-;;;; WINDOW MANAGEMENT
-
+;;; WINDOW MANAGEMENT
 (require 'windmove)
 
 ;;;###autoload
@@ -145,23 +143,18 @@ one, an error is signaled."
       (select-window other-win))))
 
 
-;;;; THEMES
-
+;;; THEMES
 (use-package doom-themes
-  :ensure t
+  ;;:ensure t
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
         doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-one t)
-
+  (load-theme 'doom-dracula t)
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (all-the-icons must be installed!)
   (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
@@ -195,8 +188,6 @@ one, an error is signaled."
 	delete-by-moving-to-trash t))
 
 
-
-
 ;; This changes the modeline bar at the bottom of the screen
 (use-package doom-modeline
   :ensure t
@@ -205,28 +196,158 @@ one, an error is signaled."
   (setq doom-modeline-height 35      ;; sets modeline height
         doom-modeline-bar-width 5    ;; sets right bar width
         doom-modeline-persp-name t   ;; adds perspective name to modeline
-        doom-modeline-persp-icon t)) ;; adds folder icon next to persp name
+        doom-modeline-persp-icon t   ;; adds folder icon next to persp name
+	inhibit-compacting-font-caches t  ;; fix lagging issue
+	))
+
+;; ( use-package neotree
+;;   :config
+;;   (setq neo-smart-open t
+;;         neo-show-hidden-files t
+;;         neo-window-width 55
+;;         neo-window-fixed-size nil
+;;         inhibit-compacting-font-caches t
+;;         projectile-switch-project-action 'neotree-projectile-action) 
+;;         ;; truncate long file names in neotree
+;;         (add-hook 'neo-after-create-hook
+;;            #'(lambda (_)
+;;                (with-current-buffer (get-buffer neo-buffer-name)
+;;                  (setq truncate-lines t)
+;;                  (setq word-wrap nil)
+;;                  (make-local-variable 'auto-hscroll-mode)
+;;                  (setq auto-hscroll-mode nil)))))
 
 
-(use-package neotree
+;; (setq neo-theme (if (display-graphic-p) 'icons 'a
+;;		    rrow))
+
+
+;; ----------------------------------------------
+;;     TREEMACS
+;; ----------------------------------------------
+
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
   :config
-  (setq neo-smart-open t
-        neo-show-hidden-files t
-        neo-window-width 55
-        neo-window-fixed-size nil
-        inhibit-compacting-font-caches t
-        projectile-switch-project-action 'neotree-projectile-action) 
-        ;; truncate long file names in neotree
-        (add-hook 'neo-after-create-hook
-           #'(lambda (_)
-               (with-current-buffer (get-buffer neo-buffer-name)
-                 (setq truncate-lines t)
-                 (setq word-wrap nil)
-                 (make-local-variable 'auto-hscroll-mode)
-                 (setq auto-hscroll-mode nil)))))
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                2000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-files-by-mouse-dragging    t
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-project-follow-into-home        nil
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
+
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :ensure t)
+
+;; (use-package treemacs-projectile
+;;   :after (treemacs projectile)
+;;   :ensure t)
+
+(use-package treemacs-icons-dired
+  :hook (dired-mode . treemacs-icons-dired-enable-once)
+  :ensure t)
+
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
+(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+  :ensure t
+  :config (treemacs-set-scope-type 'Perspectives))
+
+(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+  :after (treemacs)
+  :ensure t
+  :config (treemacs-set-scope-type 'Tabs))
+
+;; (treemacs-start-on-boot)
+
+;; ----------- END TREEMACS ------------ ;;
 
 
-(setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+
 
 ;; Make parentheses different colors to easily tell how they close
 (use-package rainbow-delimiters
@@ -257,6 +378,10 @@ one, an error is signaled."
   ([remap describe-key] . helpful-key))
 
 
+(use-package org
+  :config
+  (setq org-ellipsis " ▾")
+  (setq org-log-done t))
 
 (use-package toc-org
     :commands toc-org-enable
@@ -283,6 +408,9 @@ one, an error is signaled."
          ("C-c n i" . org-roam-node-insert))
   :config
   (org-roam-db-autosync-mode))
+
+(setq org-agenda-files (list "~/Notes/work.org"
+                             "~/Notes/home.org"))
 
 (use-package csv-mode
   :ensure t
@@ -326,27 +454,6 @@ one, an error is signaled."
 (add-hook 'c-mode-hook 'eglot-ensure)
 (add-hook 'c++-mode-hook 'eglot-ensure)
 
-;; Allows pet below to find the shell path properly on macos
-;; Will this break anything on linux?
-(use-package exec-path-from-shell
-  :if (memq (window-system) '(mac ns))
-  :config (exec-path-from-shell-initialize))
-
-;; Allows eglot to always find your python env when set with pyenv or poetry
-;; Config stolen from github page
-(use-package pet
-  :config
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (setq-local python-shell-interpreter (pet-executable-find "python")
-                          python-shell-virtualenv-root (pet-virtualenv-root))
-
-              (pet-eglot-setup)
-              (eglot-ensure)
-
-              (setq-local lsp-jedi-executable-command
-                          (pet-executable-find "jedi-language-server")))))
-
 ;; Don't blow out the minibuffer with company
 (setq eldoc-echo-area-use-multiline-p nil)
 
@@ -363,17 +470,13 @@ one, an error is signaled."
     (message "Nerd Font is installed")
   (message "Nerd Font is NOT installed"))
 
-;; Set a different font for icons
-;; KEEP THIS OFF. MODELINE ICONS DO NOT SHOW UP.
-;;(setq nerd-icons-font-family "Symbols Nerd Fonts Mono")
-
 ;; Set the unicode font
 (setq doom-unicode-font (font-spec :family "JetBrains Mono" :size 11))
 
 (set-face-attribute 'default nil :height 120)  ;; Adjust font size to 12 points
 
 
-; DASHBOARD SETTINGS
+;;; DASHBOARD SETTINGS
 (use-package dashboard
   :ensure t
   :init
@@ -386,34 +489,85 @@ one, an error is signaled."
   (setq dashboard-vertically-center-content t)
   (setq dashboard-display-icons-p t)
   (setq dashboard-icon-type 'nerd-icons)
+  (setq dashboard-filter-agenda-entry 'dashboard-no-filter-agenda)
   ;; choose which sections to show and how many items per section
   (setq dashboard-items '((recents   . 5)
 			  (projects  . 5)
+			  (agenda    . 5)
 			  (bookmarks . 5)
 			  (registers . 5)))
   ;; customize which widgets to display in order
   (setq dashboard-startupify-list '(dashboard-insert-banner
-				    dashboard-insert-navigator
-				    dashboard-insert-items))
-  ;; customise the shortcuts for each heading on the dashboard
+                                    ;; dashboard-insert-newline
+                                    ;; dashboard-insert-banner-title
+                                    ;; dashboard-insert-newline
+                                    dashboard-insert-navigator
+                                    dashboard-insert-newline
+                                    dashboard-insert-init-info
+                                    dashboard-insert-items
+                                    dashboard-insert-newline
+                                    dashboard-insert-footer))
+
+ ;; customise the shortcuts for each heading on the dashboard
   (setq dashboard-item-shortcuts '((recents   . "r")
 				   (projects  . "p")
+				   (agenda    . "a")
 				   (bookmarks . "m")
 				   (registers . "e")))
-  ;; :custom
-  ;; (dashboard-modify-heading-icons '((recents . "file-text")
-  ;; 				    (bookmarks . "book")))
+
+  (setq dashboard-item-names '(("Agenda for the coming week:" . "Agenda:")))
+
   :config
   (dashboard-setup-startup-hook)
   )
 
 (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
 
-
-
+(use-package page-break-lines)
 
 ;;; OTHER USEFUL FUNCS
 (defun reload-init-file ()
   (interactive)
   (load-file user-init-file)
   (load-file user-init-file))
+
+;;; EVIL MODE
+(unless (package-installed-p 'evil)
+  (package-install 'evil))
+
+(require 'evil)
+(evil-mode 1)
+
+
+;;; GLOBAL KEY BINDINGS
+(use-package general)
+
+(define-key global-map "\C-cl" 'org-store-link)
+  (define-key global-map "\C-ca" 'org-agenda)
+
+
+(general-define-key
+ "C-M-j" 'counsel-switch-buffer
+ "C-x r C-f" 'counsel-recentf
+ "C-M-i" '(lambda () (interactive) (find-file user-init-file))
+ "C-c l" 'org-store-link
+ "C-c a" 'org-agenda
+ "C-c C-/" 'comment-or-uncomment-region
+)
+
+;; Make ESC quit prompts
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(treemacs-tab-bar treemacs-persp which-key vterm treemacs-magit treemacs-icons-dired treemacs-evil toc-org rainbow-mode rainbow-delimiters pyenv-mode poetry pet page-break-lines org-roam org-bullets nerd-icons-dired neotree ivy-rich helpful general exec-path-from-shell ef-themes doom-themes doom-modeline dashboard csv-mode counsel company-box command-log-mode all-the-icons-dired)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
