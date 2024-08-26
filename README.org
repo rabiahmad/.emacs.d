@@ -108,29 +108,19 @@ Counsel is a collection of Ivy-enhanced versions of common Emacs commands.
 Ivy is a generic completion mechanism for Emacs.
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
   (use-package ivy
-    ;; :custom
-    ;;   (setq ivy-use-virtual-buffers t)
-    ;;   (setq ivy-count-format "(%d/%d) ")
-    ;;   (setq enable-recursive-minibuffers t)
+    :diminish
     :bind (("C-s" . swiper)
-	   :map ivy-minibuffer-map
-	   ("TAB" . ivy-alt-done))
+           :map ivy-minibuffer-map
+           ("TAB" . ivy-alt-done))
     :config
     (ivy-mode 1))
 #+end_src
 
 Use ivy-rich, a third party add-on to ivy, to provide command descriptions
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-  (use-package ivy-rich
-  :ensure t
-  :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x
-  :custom
-  (ivy-virtual-abbreviate 'full
-   ivy-rich-switch-buffer-align-virtual-buffer t
-   ivy-rich-path-style 'abbrev)
-  :config
-  (ivy-set-display-transformer 'ivy-switch-buffer
-                               'ivy-rich-switch-buffer-transformer))
+ (use-package ivy-rich
+  :init
+  (ivy-rich-mode 1))
 #+end_src
 *** Helpful
 Package to provide help iterface containing more context
