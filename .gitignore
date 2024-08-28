@@ -33,3 +33,9 @@ recentf
 transient/
 eshell/
 projects
+
+# Dont need to commit config.el because this will be auto-generated as part of the init.el configuration
+config.el
+
+# LSP files
+.lsp-session*

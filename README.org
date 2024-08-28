@@ -2,7 +2,7 @@
 #+TITLE: Emacs Configuration File
 #+AUTHOR: Rabi Ahmad
 #+DESCRIPTION: Rabi's personal Emacs configuration file
-#+PROPERTY: header-args:emacs-lisp :exports code :results none :tangle init.el mkdirp yes
+#+PROPERTY: header-args:emacs-lisp :tangle "config.el" :mkdirp yes
 
 * Note
 GNU Emacs 29.4 configuration in org-mode for better readability and maintainability.
@@ -16,19 +16,9 @@ Steps:
 ** Built-Ins
 Going to configure all the built in packages first
 And any third party lib that are related to it will go under them.
-*** UTF-8 encoding
-The main purpose here is because the encoding of icons was not working on Windows 11, so this had to be changed to UTF-8 in order for nerd-icons to display correctly.
-
-Issues with Windows 11 not displaying icons correctly
-Github Issue: https://github.com/emacs-dashboard/emacs-dashboard/issues/471
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-(set-language-environment "UTF-8")  ; char-displayable-p returns 'unicode
-(set-language-environment "English")  ; char-displayable-p returns nil
-(prefer-coding-system 'utf-8)
-#+end_src
 *** Startup performance
 Make startup faster by reducing the frequency of garbage collection and then use a hook to measure Emacs startup time. Also, turn on lexical-binding for the init file.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "~/.emacs.d/config.el" :mkdirp yes
 ;; -*- lexical-binding: t; -*-
 
 ;; The default is 800 kilobytes.  Measured in bytes.
@@ -41,8 +31,18 @@ Make startup faster by reducing the frequency of garbage collection and then use
                      (emacs-init-time "%.2f")
                      gcs-done)))
 #+end_src
+*** UTF-8 encoding
+The main purpose here is because the encoding of icons was not working on Windows 11, so this had to be changed to UTF-8 in order for nerd-icons to display correctly.
+
+Issues with Windows 11 not displaying icons correctly
+Github Issue: https://github.com/emacs-dashboard/emacs-dashboard/issues/471
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
+(set-language-environment "UTF-8")  ; char-displayable-p returns 'unicode
+(set-language-environment "English")  ; char-displayable-p returns nil
+(prefer-coding-system 'utf-8)
+#+end_src
 *** UI elements 
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (scroll-bar-mode -1)     ; Disable scroll bar
 (tool-bar-mode -1)       ; Disable toolbar
 (tooltip-mode -1)        ; Disable tooltips
@@ -73,11 +73,11 @@ Make startup faster by reducing the frequency of garbage collection and then use
 (setq confirm-kill-processes nil)            ; Stop confirming the killing of processes
 #+end_src
 *** Disable the annoying bell sound
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (setq visible-bell 1)
 #+end_src
 *** Save ~ files and other backups all together
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
         backup-by-copying t    ; Don't delink hardlinks
         version-control t      ; Use version numbers on backups
@@ -87,13 +87,13 @@ Make startup faster by reducing the frequency of garbage collection and then use
 #+end_src
 *** Line numbers
 First, enable line numbers globally by default
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (column-number-mode) ; Allow display of line number
   (global-display-line-numbers-mode t) ; Activate display of line number
 #+end_src
 
 Disable line numbers for some modes
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (dolist (mode '(org-mode-hook
                   term-mode-hook
                   eshell-mode-hook
@@ -104,7 +104,7 @@ Disable line numbers for some modes
 #+end_src
 
 Not too sure what this bit does. I copied it from somewhere
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (dolist (mode '(org-mode-hook
                   python-mode-hook
                   c-mode-hook
@@ -112,7 +112,7 @@ Not too sure what this bit does. I copied it from somewhere
     (add-hook mode (lambda () (visual-line-mode 1))))
 #+end_src
 *** Initialising package sources 
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (require 'package)
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("org" . "https://orgmode.org/elpa/")
@@ -132,7 +132,7 @@ Not too sure what this bit does. I copied it from somewhere
 ** Third party packages
 *** Counsel
 Counsel is a collection of Ivy-enhanced versions of common Emacs commands.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
 	 ("C-x b" . counsel-ibuffer)
@@ -142,7 +142,7 @@ Counsel is a collection of Ivy-enhanced versions of common Emacs commands.
 #+end_src
 *** Ivy
 Ivy is a generic completion mechanism for Emacs.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (use-package ivy
     :diminish
     :bind (("C-s" . swiper)
@@ -153,14 +153,14 @@ Ivy is a generic completion mechanism for Emacs.
 #+end_src
 
 Use ivy-rich, a third party add-on to ivy, to provide command descriptions
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
  (use-package ivy-rich
   :init
   (ivy-rich-mode 1))
 #+end_src
 *** Helpful
 Package to provide help iterface containing more context
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (use-package helpful
     :ensure t
     :custom
@@ -174,7 +174,7 @@ Package to provide help iterface containing more context
 #+end_src
 *** Window Management
 **** Windmove
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
    (require 'windmove)
 
   ;;;###autoload
@@ -246,7 +246,7 @@ Package to provide help iterface containing more context
 #+end_src
 
 Now set keybindings for buf-move functions
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (global-set-key (kbd "<C-S-M-up>")     'buf-move-up)
 (global-set-key (kbd "<C-S-M-down>")   'buf-move-down)
 (global-set-key (kbd "<C-S-M-left>")   'buf-move-left)
@@ -254,7 +254,7 @@ Now set keybindings for buf-move functions
 #+end_src
 *** Theme customisations
 **** Fonts
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 ;; Set the font everywhere
 (set-frame-font "JetBrains Mono-12" nil t)
 
@@ -270,7 +270,7 @@ Now set keybindings for buf-move functions
 #+end_src
 **** Highlight TODO
 Add highlighting to TODO and other related keywords.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package hl-todo
   :hook ((org-mode . hl-todo-mode)
          (prog-mode . hl-todo-mode))
@@ -286,7 +286,7 @@ Add highlighting to TODO and other related keywords.
 #+end_src
 **** Doom themes
 Using the doom-dracula theme
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package doom-themes
   ;;:ensure t
   :config
@@ -303,7 +303,7 @@ Using the doom-dracula theme
 #+end_src
 **** Icon packs
 Installing all-the-icons and nerd-icons
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package all-the-icons
   :if (display-graphic-p))
 
@@ -330,7 +330,7 @@ Installing all-the-icons and nerd-icons
 	delete-by-moving-to-trash t))
 #+end_src
 **** Doom Modeline
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 ;; This changes the modeline bar at the bottom of the screen
 (use-package doom-modeline
   :ensure t
@@ -345,13 +345,13 @@ Installing all-the-icons and nerd-icons
 #+end_src
 **** Rainbow delimiters
 Make parentheses different colors to easily tell how they close
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (use-package rainbow-delimiters
     :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 **** Dashboard
 Landing page when opening Emacs. This contains some useful links (and it looks better than the default tutorial, or an empty scratch buffer)
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (use-package page-break-lines)
      (use-package dashboard
        :ensure t
@@ -401,7 +401,7 @@ Landing page when opening Emacs. This contains some useful links (and it looks b
 #+end_src
 *** Treemacs
 Using treemacs to show files in tree view on the left, to simulate an IDE experience such as Visual Studio Code
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (use-package treemacs
     :ensure t
     :defer t
@@ -521,7 +521,7 @@ Using treemacs to show files in tree view on the left, to simulate an IDE experi
 #+end_src
 *** Which key
 For more useful completion when you start typing a command
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (use-package which-key
     :init (which-key-mode)
     :diminish which-key-mode
@@ -529,7 +529,7 @@ For more useful completion when you start typing a command
     (setq which-key-idle-delay 0.5))
 #+end_src
 *** Org Mode
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package org
   :config
   (setq org-ellipsis " ▾")
@@ -538,14 +538,14 @@ For more useful completion when you start typing a command
 #+end_src
 
 Allows us to create a Table of Contents in our Org docs
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package toc-org
     :commands toc-org-enable
     :init (add-hook 'org-mode-hook 'toc-org-enable))
 #+end_src
 
 Better looking bullets rather than using default asterisks
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package org-bullets)
 (add-hook 'org-mode-hook 'org-indent-mode)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
@@ -560,7 +560,7 @@ Better looking bullets rather than using default asterisks
 #+end_src
 
 Org Roam and Agenda
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package org-roam
   :ensure t
   :custom
@@ -576,7 +576,7 @@ Org Roam and Agenda
 #+end_src
 
 Customise font sizes for org level headers
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (custom-set-faces
  '(org-level-1 ((t (:inherit outline-1 :height 1.7))))
  '(org-level-2 ((t (:inherit outline-2 :height 1.6))))
@@ -588,14 +588,14 @@ Customise font sizes for org level headers
 #+end_src
 *** CSV Mode
 To make editing csv files easier. This tabulates the contents in a csv file to algin the columns.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (use-package csv-mode
     :ensure t
     :hook (csv-mode . csv-align-mode))
 #+end_src
 *** Magit
 Git management tool
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   ;; Git porcelain (porcelain = make it nice)
   ;; Main control is C-x g
   (use-package magit
@@ -605,7 +605,7 @@ Git management tool
 #+end_src
 *** Company
 *what does company do?*
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package company
   :ensure t
   :hook (after-init . global-company-mode)
@@ -631,7 +631,7 @@ Git management tool
     :hook (company-mode . company-box-mode))
 #+end_src
 *** Evil Mode
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (unless (package-installed-p 'evil)
     (package-install 'evil))
 
@@ -641,7 +641,7 @@ Git management tool
 *** Development Environments
 **** Python setup
 `python.el' provides `python-mode' which is the builtin major-mode for the Python language.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package python
   :config
   ;; Remove guess indent python message
@@ -650,7 +650,7 @@ Git management tool
 
 Numpy style docstring for Python. See: https://github.com/douglasdavis/numpydoc.el. 
 There are other packages available for docstrings, see: https://github.com/naiquevin/sphinx-doc.el
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package numpydoc
   :ensure t
   :defer t
@@ -662,7 +662,7 @@ There are other packages available for docstrings, see: https://github.com/naiqu
 #+end_src
 **** Poetry (Python development)
 Install the Poetry package for Python development. See [[https://python-poetry.org/docs/][Poetry Documentation]].
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package poetry
   :ensure t
   :defer t
@@ -675,7 +675,7 @@ Install the Poetry package for Python development. See [[https://python-poetry.o
 #+end_src
 **** Eglot - Language Server Protocol
 Package for Language Server Protocol support. Useful for coding in different languages. Has some autocompletion features. Another alternative package is LSP mode. I have not used it, but apparently eglot is more minimal.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package eglot
   :ensure t
   :defer t
@@ -705,8 +705,8 @@ Package for Language Server Protocol support. Useful for coding in different lan
 #+end_src
 **** Pyright (LSP)
 NOTE: Why do we need both Eglot AND Pyright? What is the difference? I have also heard of tree-sitter which is apparently good. See: https://www.adventuresinwhy.com/post/eglot/
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-;; Fix path FIXME check if I actually need this? Got it from https://www.adventuresinwhy.com/post/eglot/
+FIXME check if I actually need this exec-path line. I got it from https://www.adventuresinwhy.com/post/eglot/
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package exec-path-from-shell
   :ensure t
   :config
@@ -724,7 +724,7 @@ NOTE: Why do we need both Eglot AND Pyright? What is the difference? I have also
 **** Black - Code Formatting
 Buffer formatting on save using black.
 See: https://github.com/pythonic-emacs/blacken.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package blacken
   :ensure t
   :defer t
@@ -734,13 +734,13 @@ See: https://github.com/pythonic-emacs/blacken.
   :hook (python-mode-hook . blacken-mode))
 #+end_src
 *** Custom functions
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (defun reload-init-file ()
     (interactive)
     (load-file user-init-file))
 #+end_src
 *** Global keybindings
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package general)
 
 (define-key global-map "\C-cl" 'org-store-link)
