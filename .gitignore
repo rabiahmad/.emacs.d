@@ -33,7 +33,3 @@ recentf
 transient/
 eshell/
 projects
-
-# No need to commit init.el or early-init.el since these can be regenerated using README.org
-early-init.el
-init.el

@@ -1,7 +1,8 @@
+# -*- after-save-hook: (org-babel-tangle); before-save-hook: (delete-trailing-whitespace)-*-
 #+TITLE: Emacs Configuration File
 #+AUTHOR: Rabi Ahmad
 #+DESCRIPTION: Rabi's personal Emacs configuration file
-#+OPTIONS: toc:3
+#+PROPERTY: header-args:emacs-lisp :exports code :results none :tangle init.el mkdirp yes
 
 * Note
 GNU Emacs 29.4 configuration in org-mode for better readability and maintainability.
@@ -12,51 +13,70 @@ Steps:
 1. open this org file in Emacs
 2. Run `C-c C-v C-t`. This will "tangle" the code blocks from the configuration into the relevant init files. This essentially parses the code blocks using Org Babel and copies them to the the emacs configuration files.
 * Configuration
-** Early-init
-These code blocks will run before the main init.el runs. The main purpose here is because the encoding of icons was not working on Windows 11, so this had to be changed to UTF-8 in order for nerd-icons to display correctly. I have put this in early-init.el.
+** Built-Ins
+Going to configure all the built in packages first
+And any third party lib that are related to it will go under them.
+*** UTF-8 encoding
+The main purpose here is because the encoding of icons was not working on Windows 11, so this had to be changed to UTF-8 in order for nerd-icons to display correctly.
 
 Issues with Windows 11 not displaying icons correctly
 Github Issue: https://github.com/emacs-dashboard/emacs-dashboard/issues/471
-#+begin_src emacs-lisp :tangle ~/.emacs.d/early-init.el :mkdirp yes
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 (set-language-environment "UTF-8")  ; char-displayable-p returns 'unicode
 (set-language-environment "English")  ; char-displayable-p returns nil
 (prefer-coding-system 'utf-8)
 #+end_src
-** Built-Ins
-Going to configure all the built in packages first
-And any third party lib that are related to it will go under them.
-*** Emacs Defaults
-**** Disable some default UI elements 
+*** Startup performance
+Make startup faster by reducing the frequency of garbage collection and then use a hook to measure Emacs startup time. Also, turn on lexical-binding for the init file.
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-  (scroll-bar-mode -1)     ; Disable scroll bar
-  (tool-bar-mode -1)       ; Disable toolbar
-  (tooltip-mode -1)        ; Disable tooltips
-  (set-fringe-mode 10)     ; Give more breathing room
-  (toggle-frame-maximized) ; Maximize the emacs window on startup
-  (set-frame-parameter nil 'alpha-background 10) ; For current frame, transparency
-  (add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
-  (menu-bar-mode -1) ; Disable the menu bar
-  (delete-selection-mode 1)    ;; You can select text and delete it by typing.
-  (electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
-  (electric-pair-mode 1)       ;; Turns on automatic parens pairing
-  ;; The following prevents <> from auto-pairing when electric-pair-mode is on.
-  ;; Otherwise, org-tempo is broken when you try to <s TAB...
-  (add-hook 'org-mode-hook (lambda ()
-           (setq-local electric-pair-inhibit-predicate
-                   `(lambda (c)
-                  (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
-  (global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
-  (global-visual-line-mode t)  ;; Enable truncated lines
-  (setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
-  (setq use-file-dialog nil)   ;; No file dialog
-  (setq use-dialog-box nil)    ;; No dialog box
-  (setq pop-up-windows nil)    ;; No popup windows
+;; -*- lexical-binding: t; -*-
+
+;; The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
+
+;; Profile emacs startup
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "*** Emacs loaded in %s seconds with %d garbage collections."
+                     (emacs-init-time "%.2f")
+                     gcs-done)))
 #+end_src
-**** Disable the annoying bell sound
+*** UI elements 
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+(scroll-bar-mode -1)     ; Disable scroll bar
+(tool-bar-mode -1)       ; Disable toolbar
+(tooltip-mode -1)        ; Disable tooltips
+(set-fringe-mode 10)     ; Give more breathing room
+(toggle-frame-maximized) ; Maximize the emacs window on startup
+(set-frame-parameter nil 'alpha-background 10) ; For current frame, transparency
+(add-to-list 'default-frame-alist '(alpha-background . 100)) ; For all new frames henceforth
+(menu-bar-mode -1) ; Disable the menu bar
+(delete-selection-mode 1)    ;; You can select text and delete it by typing.
+(electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
+(electric-pair-mode 1)       ;; Turns on automatic parens pairing
+;; The following prevents <> from auto-pairing when electric-pair-mode is on.
+;; Otherwise, org-tempo is broken when you try to <s TAB...
+(add-hook 'org-mode-hook (lambda ()
+         (setq-local electric-pair-inhibit-predicate
+                 `(lambda (c)
+                (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+(global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
+(global-visual-line-mode t)  ;; Enable truncated lines
+(setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
+(setq use-file-dialog nil)   ;; No file dialog
+(setq use-dialog-box nil)    ;; No dialog box
+(setq pop-up-windows nil)    ;; No popup windows
+(setq initial-scratch-message "")  ; Make *scratch* buffer blank
+(setq use-short-answers t)  ; y-or-n-p makes answering questions faster
+ (global-hl-line-mode 1)  ; Highlight the current line to make it more visible
+(setq-default frame-title-format '("%b"))    ; Make window title the buffer name
+(setq confirm-kill-processes nil)            ; Stop confirming the killing of processes
+#+end_src
+*** Disable the annoying bell sound
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
   (setq visible-bell 1)
 #+end_src
-**** Save ~ files and other backups all together
+*** Save ~ files and other backups all together
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
   (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
         backup-by-copying t    ; Don't delink hardlinks
@@ -65,7 +85,7 @@ And any third party lib that are related to it will go under them.
         kept-new-versions 20   ; How many of the newest versions to keep
         kept-old-versions 5)   ; And how many of the old
 #+end_src
-**** Line numbers
+*** Line numbers
 First, enable line numbers globally by default
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
   (column-number-mode) ; Allow display of line number
@@ -91,7 +111,7 @@ Not too sure what this bit does. I copied it from somewhere
                   c++-mode-hook))
     (add-hook mode (lambda () (visual-line-mode 1))))
 #+end_src
-**** Initialising package sources 
+*** Initialising package sources 
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
   (require 'package)
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -113,12 +133,12 @@ Not too sure what this bit does. I copied it from somewhere
 *** Counsel
 Counsel is a collection of Ivy-enhanced versions of common Emacs commands.
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-  (use-package counsel
-    :bind (("M-x" . counsel-M-x)
-	   ("C-x b" . counsel-ibuffer)
-	   ("C-x C-b" . counsel-ibuffer)
-	   ("C-x C-f" . counsel-find-file)
-	   ("C-x f" . counsel-find-file)))
+(use-package counsel
+  :bind (("M-x" . counsel-M-x)
+	 ("C-x b" . counsel-ibuffer)
+	 ("C-x C-b" . counsel-ibuffer)
+	 ("C-x C-f" . counsel-find-file)
+	 ("C-x f" . counsel-find-file)))
 #+end_src
 *** Ivy
 Ivy is a generic completion mechanism for Emacs.
@@ -250,7 +270,7 @@ Now set keybindings for buf-move functions
 #+end_src
 **** Highlight TODO
 Add highlighting to TODO and other related keywords.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
 (use-package hl-todo
   :hook ((org-mode . hl-todo-mode)
          (prog-mode . hl-todo-mode))
@@ -586,45 +606,29 @@ Git management tool
 *** Company
 *what does company do?*
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-  (use-package company
-    :ensure t
-    :hook (after-init . global-company-mode)
-    :custom
-    ;; M-<num> to select an option according to its number.
-    (company-show-numbers t)
-    ;; Only 2 letters required for completion to activate.
-    (company-minimum-prefix-length 2)
-    ;; Do not downcase completions by default.
-    (company-dabbrev-downcase nil)
-    ;; Even if I write something with the wrong case,
-    ;; provide the correct casing.
-    (company-dabbrev-ignore-case t)
-    ;; Company completion wait
-    (company-idle-delay 0.2)
-    ;; No company-mode in shell & eshell
-    (company-global-modes '(not eshell-mode shell-mode)))
+(use-package company
+  :ensure t
+  :hook (after-init . global-company-mode)
+  :custom
+  ;; Search other buffers with the same major mode for completion.
+  (company-dabbrev-other-buffers t)
+  (company-dabbrev-code-other-buffers t)
+  ;; M-<num> to select an option according to its number.
+  (company-show-numbers t)
+  ;; Only 2 letters required for completion to activate.
+  (company-minimum-prefix-length 2)
+  ;; Do not downcase completions by default.
+  (company-dabbrev-downcase nil)
+  ;; Even if I write something with the wrong case,
+  ;; provide the correct casing.
+  (company-dabbrev-ignore-case t)
+  ;; Company completion wait time.
+  (company-idle-delay 0.2)
+  ;; Disable company-mode in shell and eshell modes.
+  (company-global-modes '(not eshell-mode shell-mode)))
 
-  (use-package company-box
+(use-package company-box
     :hook (company-mode . company-box-mode))
-#+end_src
-*** Eglot 
-Package for Language Server Protocol support. Useful for coding in different languages. Has some autocompletion features. Another alternative package is LSP mode. I have not used it, but apparently eglot is more minimal.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-  (use-package eglot
-    :ensure t
-    :config
-    (add-to-list 'eglot-server-programs '((c++-mode c-mode) . ("clangd"))))
-
-  ;; For some reason can't add this to use-package above
-  (add-hook 'python-mode-hook 'eglot-ensure)
-  (add-hook 'c-mode-hook 'eglot-ensure)
-  (add-hook 'c++-mode-hook 'eglot-ensure)
-
-  ;; Don't blow out the minibuffer with company
-  (setq eldoc-echo-area-use-multiline-p nil)
-
-  ;; Some extra python fluff
-  (add-hook 'python-mode-hook (lambda () (setq fill-column 120)))
 #+end_src
 *** Evil Mode
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
@@ -634,53 +638,129 @@ Package for Language Server Protocol support. Useful for coding in different lan
   (require 'evil)
   (evil-mode 1)
 #+end_src
+*** Development Environments
+**** Python setup
+`python.el' provides `python-mode' which is the builtin major-mode for the Python language.
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+(use-package python
+  :config
+  ;; Remove guess indent python message
+  (setq python-indent-guess-indent-offset-verbose nil))
+#+end_src
+
+Numpy style docstring for Python. See: https://github.com/douglasdavis/numpydoc.el. 
+There are other packages available for docstrings, see: https://github.com/naiquevin/sphinx-doc.el
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+(use-package numpydoc
+  :ensure t
+  :defer t
+  :custom
+  (numpydoc-insert-examples-block nil)
+  (numpydoc-template-long nil)
+  :bind (:map python-mode-map
+              ("C-c C-n" . numpydoc-generate)))
+#+end_src
+**** Poetry (Python development)
+Install the Poetry package for Python development. See [[https://python-poetry.org/docs/][Poetry Documentation]].
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+(use-package poetry
+  :ensure t
+  :defer t
+  :config
+  ;; Checks for the correct virtualenv. Better strategy IMO because the default
+  ;; one is quite slow.
+  (setq poetry-tracking-strategy 'switch-buffer)
+ 
+:hook (python-mode . poetry-tracking-mode))
+#+end_src
+**** Eglot - Language Server Protocol
+Package for Language Server Protocol support. Useful for coding in different languages. Has some autocompletion features. Another alternative package is LSP mode. I have not used it, but apparently eglot is more minimal.
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+(use-package eglot
+  :ensure t
+  :defer t
+  :hook (python-mode . eglot-ensure))
+
+;; Don't blow out the minibuffer with company
+(setq eldoc-echo-area-use-multiline-p nil)
+
+;; Some extra python fluff TODO does this need to go into the python setup section above? 
+(add-hook 'python-mode-hook (lambda () (setq fill-column 120)))
+
+;; Allows eglot to always find your python env when set with pyenv or poetry
+;; config stolen from github page
+(use-package pet
+  ;:ensure-system-package (dasel sqlite3)
+  :config
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (setq-local python-shell-interpreter (pet-executable-find "python")
+                          python-shell-virtualenv-root (pet-virtualenv-root))
+
+              (pet-eglot-setup)
+              (eglot-ensure)
+
+              (setq-local lsp-jedi-executable-command
+                         (pet-executable-find "jedi-language-server")))))
+#+end_src
+**** Pyright (LSP)
+NOTE: Why do we need both Eglot AND Pyright? What is the difference? I have also heard of tree-sitter which is apparently good. See: https://www.adventuresinwhy.com/post/eglot/
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+;; Fix path FIXME check if I actually need this? Got it from https://www.adventuresinwhy.com/post/eglot/
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
+
+(use-package lsp-pyright
+  :ensure t
+  :defer t
+  ;; Launches pyright when a python buffer is opened.
+  :hook ((python-mode . (lambda ()
+			  (require 'lsp-pyright)
+                         (lsp)))))
+#+end_src
+**** Black - Code Formatting
+Buffer formatting on save using black.
+See: https://github.com/pythonic-emacs/blacken.
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
+(use-package blacken
+  :ensure t
+  :defer t
+  :custom
+  (blacken-allow-py36 t)
+  (blacken-skip-string-normalization t)
+  :hook (python-mode-hook . blacken-mode))
+#+end_src
 *** Custom functions
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
   (defun reload-init-file ()
     (interactive)
-    (load-file user-init-file)
     (load-file user-init-file))
 #+end_src
 *** Global keybindings
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-  (use-package general)
+(use-package general)
 
-  (define-key global-map "\C-cl" 'org-store-link)
-    (define-key global-map "\C-ca" 'org-agenda)
+(define-key global-map "\C-cl" 'org-store-link)
+  (define-key global-map "\C-ca" 'org-agenda)
 
+(general-define-key
+ "C-M-j" 'counsel-switch-buffer
+ "C-x r C-f" 'counsel-recentf
+ "C-M-i" '(lambda () (interactive) (find-file user-init-file))
+ "C-c l" 'org-store-link
+ "C-c a" 'org-agenda
+ "C-c C-/" 'comment-or-uncomment-region
 
-  (general-define-key
-   "C-M-j" 'counsel-switch-buffer
-   "C-x r C-f" 'counsel-recentf
-   "C-M-i" '(lambda () (interactive) (find-file user-init-file))
-   "C-c l" 'org-store-link
-   "C-c a" 'org-agenda
-   "C-c C-/" 'comment-or-uncomment-region
-   
-   ;; Use ESC to quit prompts (same as C-q)
-   "<escape>" 'keyboard-escape-quit
+ ;; Use ESC to quit prompts (same as C-q)
+ "<escape>" 'keyboard-escape-quit
 
-   ;; You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTRL plus the mouse wheel for zooming in/out.
-   "C-=" 'text-scale-increase
-   "C--" 'text-scale-decrease
-   "<C-wheel-up>" 'text-scale-increase
-   "<C=wheel-down>" 'text-scale-decrease
-  )
-#+end_src
-*** Custom set variables (automatically added)
-I did not add these myself. These were added automatically. Not too sure what the purpose is.
-#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el :mkdirp yes
-  (custom-set-variables
-   ;; custom-set-variables was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
-   '(package-selected-packages
-     '(treemacs-tab-bar treemacs-persp which-key vterm treemacs-magit treemacs-icons-dired treemacs-evil toc-org rainbow-mode rainbow-delimiters pyenv-mode poetry pet page-break-lines org-roam org-bullets nerd-icons-dired neotree ivy-rich helpful general exec-path-from-shell ef-themes doom-themes doom-modeline dashboard csv-mode counsel company-box command-log-mode all-the-icons-dired)))
-  (custom-set-faces
-   ;; custom-set-faces was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
-   )
+ ;; You can use the bindings CTRL plus =/- for zooming in/out.  You can also use CTRL plus the mouse wheel for zooming in/out.
+ "C-=" 'text-scale-increase
+ "C--" 'text-scale-decrease
+ "<C-wheel-up>" 'text-scale-increase
+ "<C=wheel-down>" 'text-scale-decrease
+)
 #+end_src
