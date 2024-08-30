@@ -1,4 +1,3 @@
-# -*- after-save-hook: (org-babel-tangle); before-save-hook: (delete-trailing-whitespace)-*-
 #+TITLE: Emacs Configuration File
 #+AUTHOR: Rabi Ahmad
 #+DESCRIPTION: Rabi's personal Emacs configuration file
@@ -31,6 +30,11 @@ Make startup faster by reducing the frequency of garbage collection and then use
                      (emacs-init-time "%.2f")
                      gcs-done)))
 #+end_src
+*** Server mode
+Start the Emacs server from this instance so that all emacsclient calls are routed here.
+#+begin_src emacs-lisp :tangle "~/.emacs.d/config.el" :mkdirp yes
+(server-start)
+#+end_src
 *** UTF-8 encoding
 The main purpose here is because the encoding of icons was not working on Windows 11, so this had to be changed to UTF-8 in order for nerd-icons to display correctly.
 
@@ -41,7 +45,7 @@ Github Issue: https://github.com/emacs-dashboard/emacs-dashboard/issues/471
 (set-language-environment "English")  ; char-displayable-p returns nil
 (prefer-coding-system 'utf-8)
 #+end_src
-*** UI elements 
+*** UI elements
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (scroll-bar-mode -1)     ; Disable scroll bar
 (tool-bar-mode -1)       ; Disable toolbar
@@ -111,7 +115,7 @@ Not too sure what this bit does. I copied it from somewhere
                   c++-mode-hook))
     (add-hook mode (lambda () (visual-line-mode 1))))
 #+end_src
-*** Initialising package sources 
+*** Initialising package sources
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
   (require 'package)
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -128,6 +132,14 @@ Not too sure what this bit does. I copied it from somewhere
 
   (require 'use-package)
   (setq use-package-always-ensure t)
+#+end_src
+*** Auto-reverting changed buffers
+#+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
+;; Revert Dired and other buffers
+(setq global-auto-revert-non-file-buffers t)
+
+;; Revert buffers when the underlying file has changed
+(global-auto-revert-mode 1)
 #+end_src
 ** Third party packages
 *** Counsel
@@ -203,7 +215,7 @@ Package to provide help iterface containing more context
     (interactive)
     (let* ((other-win (windmove-find-other-window 'down))
            (buf-this-buf (window-buffer (selected-window))))
-      (if (or (null other-win) 
+      (if (or (null other-win)
               (string-match "^ \\*Minibuf" (buffer-name (window-buffer other-win))))
           (error "No window under this one")
         ;; swap top with this one
@@ -534,7 +546,6 @@ For more useful completion when you start typing a command
   :config
   (setq org-ellipsis " ▾")
   (setq org-log-done t))
-
 #+end_src
 
 Allows us to create a Table of Contents in our Org docs
@@ -554,7 +565,7 @@ Better looking bullets rather than using default asterisks
 (require 'org-tempo)
 
 (use-package rainbow-mode
-  :hook 
+  :hook
   ((org-mode prog-mode) . rainbow-mode))
 
 #+end_src
@@ -571,21 +582,24 @@ Org Roam and Agenda
   :config
   (org-roam-db-autosync-mode))
 
-(setq org-agenda-files (list "~/Notes/work.org"
-                             "~/Notes/home.org"))
+(setq org-agenda-files (list 
+  "~/Notes/todo.org"
+  "~/Notes/work.org"
+  "~/Notes/home.org"))
 #+end_src
 
 Customise font sizes for org level headers
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (custom-set-faces
- '(org-level-1 ((t (:inherit outline-1 :height 1.7))))
- '(org-level-2 ((t (:inherit outline-2 :height 1.6))))
- '(org-level-3 ((t (:inherit outline-3 :height 1.5))))
- '(org-level-4 ((t (:inherit outline-4 :height 1.4))))
- '(org-level-5 ((t (:inherit outline-5 :height 1.3))))
- '(org-level-6 ((t (:inherit outline-5 :height 1.2))))
- '(org-level-7 ((t (:inherit outline-5 :height 1.1)))))
+ '(org-level-1 ((t (:inherit outline-1 :height 1.2))))
+ '(org-level-2 ((t (:inherit outline-2 :height 1.1))))
+ '(org-level-3 ((t (:inherit outline-3 :height 1.05))))
+ '(org-level-4 ((t (:inherit outline-4 :height 1.0))))
+ '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
+ '(org-level-6 ((t (:inherit outline-5 :height 1.0))))
+ '(org-level-7 ((t (:inherit outline-5 :height 1.0)))))
 #+end_src
+
 *** CSV Mode
 To make editing csv files easier. This tabulates the contents in a csv file to algin the columns.
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
@@ -648,7 +662,7 @@ Git management tool
   (setq python-indent-guess-indent-offset-verbose nil))
 #+end_src
 
-Numpy style docstring for Python. See: https://github.com/douglasdavis/numpydoc.el. 
+Numpy style docstring for Python. See: https://github.com/douglasdavis/numpydoc.el.
 There are other packages available for docstrings, see: https://github.com/naiquevin/sphinx-doc.el
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package numpydoc
@@ -670,7 +684,6 @@ Install the Poetry package for Python development. See [[https://python-poetry.o
   ;; Checks for the correct virtualenv. Better strategy IMO because the default
   ;; one is quite slow.
   (setq poetry-tracking-strategy 'switch-buffer)
- 
 :hook (python-mode . poetry-tracking-mode))
 #+end_src
 **** Eglot - Language Server Protocol
@@ -684,7 +697,7 @@ Package for Language Server Protocol support. Useful for coding in different lan
 ;; Don't blow out the minibuffer with company
 (setq eldoc-echo-area-use-multiline-p nil)
 
-;; Some extra python fluff TODO does this need to go into the python setup section above? 
+;; Some extra python fluff TODO does this need to go into the python setup section above?
 (add-hook 'python-mode-hook (lambda () (setq fill-column 120)))
 
 ;; Allows eglot to always find your python env when set with pyenv or poetry

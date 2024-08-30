@@ -1,5 +1,14 @@
 ;; -*- lexical-binding: t; -*-
 
+;; DEBUGGING
+(setq debug-on-error nil)
+
+;; Silence compiler warnings as they can be pretty disruptive
+(setq native-comp-async-report-warnings-errors nil)
+
+;; Set the right directory to store the native comp cache
+(add-to-list 'native-comp-eln-load-path (expand-file-name "eln-cache/" user-emacs-directory))
+
 ;; Load Org mode
 (require 'org)
 
@@ -24,9 +33,3 @@
   (if (file-exists-p config-file)
       (load-file config-file)
     (message "Config file %s does not exist" config-file)))
-
-
-
-;; ;;; This is the actual config file. It is omitted if it doesn't exist so emacs won't refuse to launch.
-;; (when (file-readable-p "~/.emacs.d/README.org")
-;;   (org-babel-load-file (expand-file-name "README.org")))
