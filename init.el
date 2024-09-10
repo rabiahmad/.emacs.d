@@ -3,6 +3,9 @@
 ;; DEBUGGING
 (setq debug-on-error nil)
 
+;; Set encoding
+(set-language-environment "UTF-8")
+
 ;; Silence compiler warnings as they can be pretty disruptive
 (setq native-comp-async-report-warnings-errors nil)
 
