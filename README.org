@@ -1,7 +1,6 @@
 #+TITLE: Emacs Configuration File
 #+AUTHOR: Rabi Ahmad
 #+DESCRIPTION: Rabi's personal Emacs configuration file
-#+PROPERTY: header-args:emacs-lisp :tangle "config.el" :mkdirp yes
 
 * Note
 GNU Emacs 29.4 configuration in org-mode for better readability and maintainability.
@@ -57,13 +56,14 @@ Github Issue: https://github.com/emacs-dashboard/emacs-dashboard/issues/471
 (menu-bar-mode -1) ; Disable the menu bar
 (delete-selection-mode 1)    ;; You can select text and delete it by typing.
 (electric-indent-mode -1)    ;; Turn off the weird indenting that Emacs does by default.
+
 (electric-pair-mode 1)       ;; Turns on automatic parens pairing
 ;; The following prevents <> from auto-pairing when electric-pair-mode is on.
 ;; Otherwise, org-tempo is broken when you try to <s TAB...
 (add-hook 'org-mode-hook (lambda ()
-         (setq-local electric-pair-inhibit-predicate
-                 `(lambda (c)
-                (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+  (setq-local electric-pair-inhibit-predicate
+	  `(lambda (c) (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))))
+
 (global-auto-revert-mode t)  ;; Automatically show changes if the file has changed
 (global-visual-line-mode t)  ;; Enable truncated lines
 (setq org-edit-src-content-indentation 0) ;; Set src block automatic indent to 0 instead of 2.
@@ -538,13 +538,22 @@ For more useful completion when you start typing a command
     :init (which-key-mode)
     :diminish which-key-mode
     :config
-    (setq which-key-idle-delay 0.5))
+    (setq which-key-idle-delay 0.5)
+    (unbind-key "S-<left>" org-mode-map)
+    (unbind-key "S-<right>" org-mode-map)
+    (unbind-key "S-<up>" org-mode-map)
+    (unbind-key "S-<down>" org-mode-map)
+    (unbind-key "C-S-<left>" org-mode-map)
+    (unbind-key "C-S-<right>" org-mode-map)
+    (unbind-key "C-S-<up>" org-mode-map)
+    (unbind-key "C-S-<down>" org-mode-map)
+)
 #+end_src
 *** Org Mode
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
 (use-package org
   :config
-  (setq org-ellipsis " ▾")
+  (setq org-ellipsis " …")
   (setq org-log-done t))
 #+end_src
 
@@ -600,6 +609,14 @@ Customise font sizes for org level headers
  '(org-level-7 ((t (:inherit outline-5 :height 1.0)))))
 #+end_src
 
+Org modern 
+FIXME Does not load. when evaluated manually, issues with the bullets not showing as expected.
+Also issues with links showing inline with headings when collapsed. 
+#+begin_src emacs-lisp
+(use-package org-modern)
+(with-eval-after-load 'org (global-org-modern-mode))
+#+end_src
+
 *** CSV Mode
 To make editing csv files easier. This tabulates the contents in a csv file to algin the columns.
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
@@ -646,11 +663,87 @@ Git management tool
 #+end_src
 *** Evil Mode
 #+begin_src emacs-lisp :tangle "config.el" :mkdirp yes
-  (unless (package-installed-p 'evil)
-    (package-install 'evil))
+(unless (package-installed-p 'evil)
+  (package-install 'evil))
 
-  (require 'evil)
-  (evil-mode 1)
+;; Install Evil and disable C-i to jump forward to restore TAB functionality in Org mode.
+(use-package evil
+  :ensure t
+  :init 
+  (setq evil-want-C-i-jump nil)
+  (setq evil-want-keybinding nil)
+  :config (evil-mode 1))
+
+(use-package evil-collection
+  :after evil
+  :ensure t
+  :config
+  (evil-collection-init))
+
+(defun my-org-mode-insert-tab ()
+  "Insert a literal tab character in Insert mode."
+  (interactive)
+  (insert "\t"))
+
+(defun my-org-mode-cycle ()
+  "Cycle through headings in Normal and other states."
+  (interactive)
+  (org-cycle))
+
+;; FIXME Shift-selection not working in insert mode. Current workaround to use visual mode
+(defun my-insert-mode-shift-selection ()
+  "Enable Shift-selection in Insert mode."
+  (define-key evil-insert-state-map (kbd "S-<left>") 'my-shift-select-left)
+  (define-key evil-insert-state-map (kbd "S-<right>") 'my-shift-select-right)
+  (define-key evil-insert-state-map (kbd "S-<up>") 'my-shift-select-up)
+  (define-key evil-insert-state-map (kbd "S-<down>") 'my-shift-select-down))
+
+(defun my-shift-select-left ()
+  "Extend selection to the left in Insert mode."
+  (interactive)
+  (if (use-region-p)
+      (setq deactivate-mark nil)
+    (set-mark (point)))
+  (backward-char))
+
+(defun my-shift-select-right ()
+  "Extend selection to the right in Insert mode."
+  (interactive)
+  (if (use-region-p)
+      (setq deactivate-mark nil)
+    (set-mark (point)))
+  (forward-char))
+
+(defun my-shift-select-up ()
+  "Extend selection upwards in Insert mode."
+  (interactive)
+  (if (use-region-p)
+      (setq deactivate-mark nil)
+    (set-mark (point)))
+  (previous-line))
+
+(defun my-shift-select-down ()
+  "Extend selection downwards in Insert mode."
+  (interactive)
+  (if (use-region-p)
+      (setq deactivate-mark nil)
+    (set-mark (point)))
+  (next-line))
+
+(defun my-org-mode-setup ()
+  "Custom setup for Org mode with Evil mode."
+  (when (derived-mode-p 'org-mode)
+    ;; Bind `TAB` to `my-org-mode-insert-tab` and `my-org-mode-cycle`
+    (evil-define-key 'insert org-mode-map (kbd "TAB") 'my-org-mode-insert-tab)
+    (evil-define-key 'normal org-mode-map (kbd "TAB") 'my-org-mode-cycle)
+    (evil-define-key 'visual org-mode-map (kbd "TAB") 'my-org-mode-cycle)
+    ;; Set up Shift-selection in Insert mode
+    (my-insert-mode-shift-selection)))
+
+(add-hook 'org-mode-hook 'my-org-mode-setup)
+
+;; Ensure transient-mark-mode is enabled for highlighting selections
+(transient-mark-mode 1)
 #+end_src
 *** Development Environments
 **** Python setup
